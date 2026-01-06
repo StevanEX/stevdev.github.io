@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  <title>Stevan's Desktop</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      transition: background 0.4s ease, color 0.4s ease;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0f1220;
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    /* Center container */
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    /* Menu buttons */
+    .menu {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .menu button {
+      padding: 15px 30px;
+      background: #1c2040;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .menu button:hover {
+      transform: scale(1.15);
+      background: #2c32ff;
+    }
+
+    /* Desktop window */
+    .window {
+      transition: transform 0.3s ease, opacity 0.3s ease, background 0.4s ease, border 0.4s ease;
+      position: absolute;
+      width: 360px;
+      background: #1a1e3a;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      transform: scale(0.8);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .window.active {
+      transform: scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .title-bar {
+      padding: 12px;
+      background: #262b55;
+      border-radius: 14px 14px 0 0;
+      cursor: grab;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-bar span {
+      font-weight: bold;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 14px;
+      font-family: monospace;
+      cursor: pointer;
+      padding: 2px 6px;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .close-btn:hover {
+      color: #ff6b6b;
+      transform: scale(1.1);
+    }
+
+    .content {
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .no-select, .no-select * {
+      user-select: none;
+    }
+      /* HOME WINDOW STYLE */
+    .home-window {
+      width: 680px;
+      max-width: 90vw;
+      background: linear-gradient(180deg, #0f1c2e, #0b1422);
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+
+    .home-content {
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .home-content h1 {
+      font-size: 56px;
+      margin: 0;
+      font-weight: 300;
+    }
+
+    .accent {
+      color: #b9f6ff;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 18px;
+      opacity: 0.85;
+    }
+
+    @media (max-width: 768px) {
+      .home-window {
+        width: 92vw;
+      }
+
+      .home-content {
+        padding: 40px 20px;
+      }
+
+      .home-content h1 {
+        font-size: 38px;
+      }
+
+      .icon-menu {
+        flex-direction: row;
+        gap: 24px;
+        margin-top: 32px;
+      }
+
+      .icon-btn img {
+        width: 52px;
+        height: 52px;
+      }
+
+      .window {
+        width: 92vw;
+        max-height: 80vh;
+      }
+    }
+
+    .icon-menu {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 50px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.25s ease;
+    }
+
+    .icon-btn img {
+      width: 64px;
+      height: 64px;
+      filter: invert(1);
+    }
+
+    .icon-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .icon-btn span {
+      font-size: 14px;
+      letter-spacing: 1px;
+      opacity: 0.9;
+      color: white;
+      transition: color 0.4s ease;
+    }
+
+    body.light .icon-btn span {
+      color: #111;
+    }
+
+      /* THEME BUTTON */
+    /* GLOBAL THEME BUTTON */
+    .global-theme-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 9999;
+    }
+
+    .global-theme-btn img {
+      width: 32px;
+      height: 32px;
+      filter: invert(1);
+      transition: transform 0.2s ease;
+    }
+
+    .global-theme-btn:hover img {
+      transform: scale(1.15);
+    }
+
+    body.light .global-theme-btn img {
+      filter: none;
+    }
+
+    /* LIGHT MODE */
+    body.light {
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    body.light .window {
+      background: linear-gradient(180deg, #ffffff, #f0f0f0);
+      border: 2px solid rgba(0,0,0,0.35);
+    }
+
+    body.light .title-bar {
+      background: #d32f2f;
+      color: white;
+    }
+
+    body.light .accent {
+      color: #d32f2f;
+    }
+
+    body.light .icon-btn img {
+      filter: none;
+    }
+
+    /* ARTWORK GRID */
+    .art-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 14px;
+    }
+
+    .art-grid img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #111;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      will-change: transform;
+    }
+
+    .art-grid img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- GLOBAL THEME TOGGLE -->
+  <button class="global-theme-btn" onclick="toggleTheme()">
+    <img id="themeIcon" src="https://cdn-icons-png.flaticon.com/512/606/606807.png" alt="theme" />
+  </button>
+
+  <!-- HOME WINDOW -->
+  <div class="window active home-window" id="home" style="pointer-events:auto; opacity:1; transform:scale(1);">
+    <div class="title-bar no-drag">
+      <span>home</span>
+    </div>
+    <div class="home-content">
+      <h1>Hello! I'm <span class="accent">Stevan</span></h1>
+      <p class="subtitle">digital artist, and game developer</p>
+
+      <div class="icon-menu">
+        <button class="icon-btn" onclick="toggleWindow('about')">
+          <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" />
+          <span>about</span>
+        </button>
+        <button class="icon-btn" onclick="toggleWindow('socials')">
+          <img src="https://cdn-icons-png.flaticon.com/512/455/455691.png" />
+          <span>socials</span>
+        </button>
+        <button class="icon-btn" onclick="toggleWindow('artworks')">
+          <img src="https://cdn-icons-png.flaticon.com/512/860/860814.png" />
+          <span>artworks</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Windows -->
+  <div id="about" class="window">
+    <div class="title-bar">
+      <span>About Me</span>
+      <button class="close-btn" onclick="closeWindow('about')">( X )</button>
+    </div>
+    <div class="content">
+      test
+    </div>
+  </div>
+
+  <div id="socials" class="window">
+    <div class="title-bar">
+      <span>Socials</span>
+      <button class="close-btn" onclick="closeWindow('socials')">( X )</button>
+    </div>
+    <div class="content">
+      test
+    </div>
+  </div>
+
+  <div id="artworks" class="window">
+    <div class="title-bar">
+      <span>Artworks</span>
+      <button class="close-btn" onclick="closeWindow('artworks')">( X )</button>
+    </div>
+    <div class="content">
+      <div class="art-grid">
+        <a href="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee" target="_blank"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400" /></a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const windows = document.querySelectorAll('.window');
+    let topZ = 10;
+
+    function centerWindow(win) {
+      win.style.left = `calc(50% - ${win.offsetWidth / 2}px)`;
+      win.style.top = `calc(50% - ${win.offsetHeight / 2}px)`;
+    }
+
+    function bringToFront(win) {
+      topZ++;
+      win.style.zIndex = topZ;
+    }
+
+    function toggleWindow(id) {
+      const win = document.getElementById(id);
+      if (win.classList.contains('active')) {
+        bringToFront(win);
+        return;
+      }
+      centerWindow(win);
+      bringToFront(win);
+      win.classList.add('active');
+    }
+
+    function closeWindow(id) {
+      const win = document.getElementById(id);
+      win.classList.remove('active');
+    }
+
+    // Drag logic (disable for home window)
+    windows.forEach(win => {
+      if (win.id === 'home') return; // home is not draggable
+
+      const bar = win.querySelector('.title-bar');
+      let isDragging = false;
+      let offsetX = 0, offsetY = 0;
+
+      const startDrag = (clientX, clientY) => {
+        isDragging = true;
+        bringToFront(win);
+        offsetX = clientX - win.offsetLeft;
+        offsetY = clientY - win.offsetTop;
+        document.body.classList.add('no-select');
+      };
+
+      bar.addEventListener('mousedown', e => {
+        startDrag(e.clientX, e.clientY);
+      });
+
+      bar.addEventListener('touchstart', e => {
+        const t = e.touches[0];
+        startDrag(t.clientX, t.clientY);
+      }, { passive: true });
+
+      const moveDrag = (clientX, clientY) => {
+        if (!isDragging) return;
+        win.style.left = clientX - offsetX + 'px';
+        win.style.top = clientY - offsetY + 'px';
+      };
+
+      document.addEventListener('mousemove', e => {
+        moveDrag(e.clientX, e.clientY);
+      });
+
+      document.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        const t = e.touches[0];
+        moveDrag(t.clientX, t.clientY);
+      }, { passive: true });
+
+      const stopDrag = () => {
+        isDragging = false;
+        document.body.classList.remove('no-select');
+      };
+
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchend', stopDrag);
+    });
+
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+
+      body.classList.toggle('light');
+
+      if (body.classList.contains('light')) {
+        icon.src = 'https://cdn-icons-png.flaticon.com/512/702/702459.png'; // sun
+      } else {
+        icon.src = 'https://cdn-icons-png.flaticon.com/512/606/606807.png'; // moon
+      }
+    }
+  </script>
+</body>
+</html>
